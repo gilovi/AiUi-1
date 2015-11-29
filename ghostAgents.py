@@ -12,6 +12,7 @@ from game import Directions
 import random
 from util import manhattanDistance
 import util
+import search
 
 class GhostAgent( Agent ):
   def __init__( self, index ):
@@ -19,14 +20,26 @@ class GhostAgent( Agent ):
 
   def getAction( self, state ):
     dist = self.getDistribution(state)
-    if len(dist) == 0: 
-      return Directions.STOP
-    else:
-      return util.chooseFromDistribution( dist )
+    #if len(dist) == 0:
+      #return Directions.STOP
+    #else:
+    return util.chooseFromDistribution( dist )
     
   def getDistribution(self, state):
     "Returns a Counter encoding a distribution over actions from the provided state."
     util.raiseNotDefined()
+
+class Cat(Agent):
+  def __init__( self, index ,fn='aStarSearch', prob='CatsSearchProblem', heuristic='manhattanHeuristic' ):
+    self.index = index
+    heur = getattr(search, heuristic)
+    func = getattr(search, fn)
+    self.searchFunction = lambda x: func(x, heuristic=heur)
+    self.searchType = getattr(ghostAgents, prob)
+    problem = self.searchType(state)
+
+  def getAction( self, state ):
+    return self.searchFunction(problem)[0]
 
 class RandomGhost( GhostAgent ):
   "A ghost that chooses a legal action uniformly at random."
@@ -73,3 +86,88 @@ class DirectionalGhost( GhostAgent ):
     for a in legalActions: dist[a] += ( 1-bestProb ) / len(legalActions)
     dist.normalize()
     return dist
+
+
+class CatsSearchProblem(search.SearchProblem):
+
+  def __init__(self, gameState, costFn = lambda x: 1, goal=(1,1), start=None, warn=True):
+    """
+    Stores the start and goal.
+
+    gameState: A GameState object (pacman.py)
+    costFn: A function from a search state (tuple) to a non-negative number
+    goal: A position in the gameState
+    """
+    self.walls = gameState.getWalls()
+    self.startState = gameState.getGhostPosition()#TODO
+    if start != None: self.startState = start
+    self.goal = goal
+    self.costFn = costFn
+    if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*goal)):
+      print('Warning: this does not look like a regular search maze')
+
+    # For display purposes
+    self._visited, self._visitedlist, self._expanded = {}, [], 0
+
+  def getStartState(self):
+    return self.startState
+
+  def isGoalState(self, state):
+     isGoal = state == self.goal
+
+     # For display purposes only
+     if isGoal:
+       self._visitedlist.append(state)
+       import __main__
+       if '_display' in dir(__main__):
+         if 'drawExpandedCells' in dir(__main__._display): #@UndefinedVariable
+           __main__._display.drawExpandedCells(self._visitedlist) #@UndefinedVariable
+
+     return isGoal
+
+  def getSuccessors(self, state):
+    """
+    Returns successor states, the actions they require, and a cost of 1.
+
+     As noted in search.py:
+         For a given state, this should return a list of triples,
+     (successor, action, stepCost), where 'successor' is a
+     successor to the current state, 'action' is the action
+     required to get there, and 'stepCost' is the incremental
+     cost of expanding to that successor
+    """
+
+    successors = []
+    for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+      x,y = state
+      dx, dy = Actions.directionToVector(action)
+      nextx, nexty = int(x + dx), int(y + dy)
+      if not self.walls[nextx][nexty]:
+        nextState = (nextx, nexty)
+        cost = self.costFn(nextState)
+        successors.append( ( nextState, action, cost) )
+
+    # Bookkeeping for display purposes
+    self._expanded += 1
+    if state not in self._visited:
+      self._visited[state] = True
+      self._visitedlist.append(state)
+
+    return successors
+
+  def getCostOfActions(self, actions):
+    """
+    Returns the cost of a particular sequence of actions.  If those actions
+    include an illegal move, return 999999
+    """
+    if actions == None: return 999999
+    x,y= self.getStartState()
+    cost = 0
+    for action in actions:
+      # Check figure out the next state and see whether its' legal
+      dx, dy = Actions.directionToVector(action)
+      x, y = int(x + dx), int(y + dy)
+      if self.walls[x][y]: return 999999
+      cost += self.costFn((x,y))
+    return cost
+

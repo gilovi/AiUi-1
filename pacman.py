@@ -356,12 +356,16 @@ class PacmanRules:
         state.data.scoreChange += 500
         state.data._win = True
     # Eat capsule
-    if( position in state.getCapsules() ):
-      state.data.capsules.remove( position )
-      state.data._capsuleEaten = position
-      # Reset all ghosts' scared timers
-      for index in range( 1, len( state.data.agentStates ) ):
-        state.data.agentStates[index].scaredTimer = SCARED_TIME
+    # if( position in state.getCapsules() ):
+    #   state.data.capsules.remove( position )
+    #   state.data._capsuleEaten = position
+    #   # Reset all ghosts' scared timers
+    #   for index in range( 1, len( state.data.agentStates ) ):
+    #     state.data.agentStates[index].scaredTimer = SCARED_TIME
+    for ghostNum in range(1, state.getNumAgents()):
+      if not state.getGhostState(ghostNum).scaredTimer > 0:
+        return
+    state.data._win = True
   consume = staticmethod( consume )
 
 class GhostRules:
@@ -425,11 +429,13 @@ class GhostRules:
       GhostRules.placeGhost(state, ghostState)
       ghostState.scaredTimer = 0
       # Added for first-person
-      state.data._eaten[agentIndex] = True
+      #state.data._eaten[agentIndex] = True
     else:
       if not state.data._win:
-        state.data.scoreChange -= 500
-        state.data._lose = True
+        #state.data.scoreChange -= 500
+        #state.data._lose = True
+        ghostState.scaredTimer = 10000 #@@@
+        ghostState.isScared = True
   collide = staticmethod( collide )
 
   def canKill( pacmanPosition, ghostPosition ):
