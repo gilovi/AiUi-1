@@ -68,7 +68,6 @@ class Node():
         self.price = price
         self.father = father
 
-
 def search (problem , data_struct ):
 
   start_node = Node(problem.getStartState())
@@ -92,14 +91,6 @@ def search (problem , data_struct ):
           new_node = Node(state, curr_node.move + [move], curr_node.price + price, curr_node)
           data_struct.push(new_node)
           nodes[state] = new_node
-
-
-  if data_struct.isEmpty() and not found_goal:
-    print('can\'t find a solution.')
-    exit(1)
-
-  #return find_path(found_goal)
-
 
 def breadthFirstSearch(problem):
   "Search the shallowest nodes in the search tree first. [p 81]"
@@ -138,6 +129,5 @@ def euclideanHeuristic(position, problem, info={}):
 
 # Abbreviations
 bfs = breadthFirstSearch
-dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch

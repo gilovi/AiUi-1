@@ -396,7 +396,7 @@ class GhostRules:
 
     ghostState = state.data.agentStates[ghostIndex]
     speed = GhostRules.GHOST_SPEED
-    if ghostState.scaredTimer > 0: speed /= 2.0
+    if ghostState.scaredTimer > 0: speed *= 2.0 #ovi
     vector = Actions.directionToVector( action, speed )
     ghostState.configuration = ghostState.configuration.generateSuccessor( vector )
   applyAction = staticmethod( applyAction )
@@ -425,9 +425,10 @@ class GhostRules:
 
   def collide( state, ghostState, agentIndex):
     if ghostState.scaredTimer > 0:
-      state.data.scoreChange += 200
-      GhostRules.placeGhost(state, ghostState)
-      ghostState.scaredTimer = 0
+        pass
+      # state.data.scoreChange += 200 #@@@
+      # GhostRules.placeGhost(state, ghostState) #@@@
+      # ghostState.scaredTimer = 0 #@@@
       # Added for first-person
       #state.data._eaten[agentIndex] = True
     else:
