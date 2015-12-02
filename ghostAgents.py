@@ -47,7 +47,7 @@ class CatsSearchProblem(search.SearchProblem):
      required to get there, and 'stepCost' is the incremental
      cost of expanding to that successor
     """
-    chasing = self.index - 1
+    # chasing = self.index - 1
 
     successors = []
     for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
@@ -79,7 +79,7 @@ class CatsSearchProblem(search.SearchProblem):
 
 class CatAgent(Agent):
   MIN_DIST = 8
-
+  origStart = None
   def __init__( self, index ,fn='aStarSearch', prob = CatsSearchProblem, heuristic='manhattanHeuristic' ):
     self.index = index
     heur = getattr(search, heuristic)
@@ -87,7 +87,9 @@ class CatAgent(Agent):
     self.searchFunction = lambda x: func(x, heuristic=heur)
     self.searchType = prob
 
+
   def getAction( self, state ):
+    if self.origStart == None: self.origStart = state.getGhostPosition(self.index)
     chased = self.index % (state.getNumAgents() - 1) + 1
     chasing = self.index - 1
     if chasing == 0 : chasing =  state.getNumAgents() - 1
@@ -96,6 +98,11 @@ class CatAgent(Agent):
     #   return max(dist, action for dist in state.getLegalActions(self.index))
     problem = self.searchType(state, state.getGhostPosition(chased),
          state.getGhostPosition(self.index))
+    if len(self.searchFunction(problem)) == 0:
+      print("@@@ ghosts colide ghostIndex=" + str(self.index) + " @@@")
+
+      # deColideProblem = self.searchType(state, self.origStart)
+      return  Directions.STOP #deColideProblem
     return self.searchFunction(problem)[0]
 
 class GhostAgent( Agent ):
