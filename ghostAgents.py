@@ -115,7 +115,7 @@ class CatAgent(Agent):
          state.getGhostPosition(self.index), noGo)
     try:
       return self.searchFunction(problem)[0]
-    except TypeError:
+    except (TypeError, IndexError):
       return noGoDir
 
       # deColideProblem = self.searchType(state, self.origStart)
