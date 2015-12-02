@@ -392,7 +392,7 @@ class GhostRules:
 
     legal = GhostRules.getLegalActions( state, ghostIndex )
     if action not in legal:
-      raise Exception("Illegal ghost action " + str(action))
+      raise Exception("Illegal ghost action " + str(action) + "  ghostIndex=" + str(ghostIndex))
 
     ghostState = state.data.agentStates[ghostIndex]
     speed = GhostRules.GHOST_SPEED
@@ -409,18 +409,25 @@ class GhostRules:
   decrementTimer = staticmethod( decrementTimer )
 
   def checkDeath( state, agentIndex):
-    pacmanPosition = state.getPacmanPosition()
-    if agentIndex == 0: # Pacman just moved; Anyone can kill him
-      for index in range( 1, len( state.data.agentStates ) ):
+    toJump = [False] * 5
+    otherAgentIndex = state.getPacmanPosition()
+    for index1 in range( 1, len( state.data.agentStates ) ):
+      for index2 in range(1, len( state.data.agentStates ) ):
+        if index1 == index2: continue
+        ghost1State = state.data.agentStates[index1]
+        ghost2State = state.data.agentStates[index2]
+        ghost1Position = ghost1State.configuration.getPosition()
+        ghost2Position = ghost2State.configuration.getPosition()
+        if ghost1Position == ghost2Position:
+          toJump[index1 - 1] = True
+          toJump[index2 - 1] = True
+                  #@@#@@
+    for index in range(1, len(toJump) + 1):
+      if toJump[index - 1]:
         ghostState = state.data.agentStates[index]
-        ghostPosition = ghostState.configuration.getPosition()
-        if GhostRules.canKill( pacmanPosition, ghostPosition ):
-          GhostRules.collide( state, ghostState, index )
-    else:
-      ghostState = state.data.agentStates[agentIndex]
-      ghostPosition = ghostState.configuration.getPosition()
-      if GhostRules.canKill( pacmanPosition, ghostPosition ):
-        GhostRules.collide( state, ghostState, agentIndex )
+        GhostRules.placeGhost(state, ghostState)
+
+
   checkDeath = staticmethod( checkDeath )
 
   def collide( state, ghostState, agentIndex):
