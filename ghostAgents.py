@@ -94,8 +94,11 @@ class CatAgent(Agent):
     chasing = self.index - 1
     if chasing == 0 : chasing =  state.getNumAgents() - 1
     noProblem = self.searchType(state, state.getGhostPosition(chasing), state.getGhostPosition(self.index))
-    noGoDir = self.searchFunction(noProblem)[0]
-    noGo = Actions.directionToIndex(state.getGhostPosition(self.index) , noGoDir)
+    try:
+      noGoDir = self.searchFunction(noProblem)[0]
+      noGo = Actions.directionToIndex(state.getGhostPosition(self.index) , noGoDir)
+    except IndexError:
+      noGo = None
     #if manhattanDistance(state.getGhost(chasing), state.getGhost(self.index)) < MIN_DIST
     #   return max(dist, action for dist in state.getLegalActions(self.index))
     problem = self.searchType(state, state.getGhostPosition(chased),
