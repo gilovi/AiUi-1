@@ -427,6 +427,19 @@ class GhostRules:
         ghostState = state.data.agentStates[index]
         GhostRules.placeGhost(state, ghostState)
 
+    pacmanPosition = state.getPacmanPosition()
+    if agentIndex == 0: # Pacman just moved; Anyone can kill him
+      for index in range( 1, len( state.data.agentStates ) ):
+        ghostState = state.data.agentStates[index]
+        ghostPosition = ghostState.configuration.getPosition()
+        if GhostRules.canKill( pacmanPosition, ghostPosition ):
+          GhostRules.collide( state, ghostState, index )
+    else:
+      ghostState = state.data.agentStates[agentIndex]
+      ghostPosition = ghostState.configuration.getPosition()
+      if GhostRules.canKill( pacmanPosition, ghostPosition ):
+        GhostRules.collide( state, ghostState, agentIndex )
+
 
   checkDeath = staticmethod( checkDeath )
 
