@@ -288,6 +288,10 @@ class Actions:
 
   TOLERANCE = .001
 
+  def directionToIndex(currPosition , direction ):
+      return tuple(map(lambda a,b: a + b, Actions._directions[direction], currPosition))
+  directionToIndex = staticmethod(directionToIndex)
+
   def reverseDirection(action):
     if action == Directions.NORTH:
       return Directions.SOUTH

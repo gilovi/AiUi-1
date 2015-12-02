@@ -12,6 +12,7 @@ by Pacman agents (in searchAgents.py).
 """
 
 import util
+from random import shuffle
 
 class SearchProblem:
   """
@@ -80,8 +81,9 @@ def search (problem , data_struct ):
       if problem.isGoalState(curr_node.position):
         return curr_node.move
         #found_goal = curr_node
-         
-      for state, move, price in [ succ for succ in problem.getSuccessors(curr_node.position)] :
+      successors = problem.getSuccessors(curr_node.position)
+      shuffle(successors)
+      for state, move, price in [ succ for succ in successors] :
         #new_node = Node(state, curr_node.move + move, curr_node.price + price, curr_node )
         if state in nodes:
             if nodes[state].price > price + curr_node.price:
@@ -91,6 +93,7 @@ def search (problem , data_struct ):
           new_node = Node(state, curr_node.move + [move], curr_node.price + price, curr_node)
           data_struct.push(new_node)
           nodes[state] = new_node
+  return None
 
 def breadthFirstSearch(problem):
   "Search the shallowest nodes in the search tree first. [p 81]"

@@ -17,7 +17,7 @@ import search
 
 class CatsSearchProblem(search.SearchProblem):
 
-  def __init__(self, gameState, goal=(1,1), start=None, costFn = lambda x: 1):
+  def __init__(self, gameState, goal=(1,1), start=None, noGo = None, costFn = lambda x: 1):
     """
     Stores the start and goal.
 
@@ -29,6 +29,7 @@ class CatsSearchProblem(search.SearchProblem):
     self.startState = start
     self.goal = goal
     self.costFn = costFn
+    self.noGo = noGo
     
   def getStartState(self):
     return self.startState
@@ -47,11 +48,12 @@ class CatsSearchProblem(search.SearchProblem):
      required to get there, and 'stepCost' is the incremental
      cost of expanding to that successor
     """
-    chasing = self.index - 1
+    #chasing = self.index - 1
 
     successors = []
     for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
       x,y = state
+      if state == self.noGo : continue
       dx, dy = Actions.directionToVector(action)
       nextx, nexty = int(x + dx), int(y + dy)
       if not self.walls[nextx][nexty]:
@@ -91,12 +93,18 @@ class CatAgent(Agent):
     chased = self.index % (state.getNumAgents() - 1) + 1
     chasing = self.index - 1
     if chasing == 0 : chasing =  state.getNumAgents() - 1
-    
+    noProblem = self.searchType(state, state.getGhostPosition(chasing), state.getGhostPosition(self.index))
+    noGoDir = self.searchFunction(noProblem)[0]
+    noGo = Actions.directionToIndex(state.getGhostPosition(self.index) , noGoDir)
     #if manhattanDistance(state.getGhost(chasing), state.getGhost(self.index)) < MIN_DIST
     #   return max(dist, action for dist in state.getLegalActions(self.index))
     problem = self.searchType(state, state.getGhostPosition(chased),
-         state.getGhostPosition(self.index))
-    return self.searchFunction(problem)[0]
+         state.getGhostPosition(self.index), noGo)
+    try:
+      action = self.searchFunction(problem)[0]
+    except TypeError:
+      return noGoDir
+    return action
 
 class GhostAgent( Agent ):
   def __init__( self, index ):
