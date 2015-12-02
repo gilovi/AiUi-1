@@ -81,7 +81,7 @@ class CatsSearchProblem(search.SearchProblem):
 
 class CatAgent(Agent):
 
-  DIST_FROM_PAC = 5
+  DIST_FROM_PAC = 3
 
   origStart = None
   def __init__( self, index ,fn='aStarSearch', prob = CatsSearchProblem, heuristic='manhattanHeuristic' ):
@@ -102,7 +102,7 @@ class CatAgent(Agent):
     pacProblem = self.searchType(state, state.getPacmanPosition(), state.getGhostPosition(self.index))
 
     noGoDir = self.searchFunction(pacProblem)
-    if  len(noGoDir) > CatAgent.DIST_FROM_PAC and random.random() > 0.5 :
+    if  len(noGoDir) > CatAgent.DIST_FROM_PAC and random.random() > 0.2 :
       noGoDir = self.searchFunction(noProblem)
     try:
       noGoDir =  noGoDir[0]
