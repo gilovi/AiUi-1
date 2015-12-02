@@ -14,25 +14,11 @@ from util import manhattanDistance
 import util
 import search
 
-
-class CatAgent(Agent):
-  def __init__( self, index ,fn='aStarSearch', prob='CatsSearchProblem', heuristic='manhattanHeuristic' ):
-    self.index = index
-    heur = getattr(search, heuristic)
-    func = getattr(search, fn)
-    self.searchFunction = lambda x: func(x, heuristic=heur)
-    self.searchType = getattr(ghostAgents, prob)
-
-  def getAction( self, state ):
-
-    problem = self.searchType\
-        (state, state.getGhostPosition(self.index % (state.getNumAgents() - 1) + 1),
-         state.getGhostPosition(self.index))
-    return self.searchFunction(problem)[0]
+MIN_DIST = 8
 
 class CatsSearchProblem(search.SearchProblem):
 
-  def __init__(self, gameState, goal=(1,1), start=None, costFn = lambda x: 1, warn=True):
+  def __init__(self, gameState, goal=(1,1), start=None, costFn = lambda x: 1):
     """
     Stores the start and goal.
 
@@ -41,31 +27,15 @@ class CatsSearchProblem(search.SearchProblem):
     goal: A position in the gameState
     """
     self.walls = gameState.getWalls()
-    self.startState = gameState.getGhostPosition()#TODO
-    if start != None: self.startState = start
+    self.startState = start
     self.goal = goal
     self.costFn = costFn
-    if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*goal)):
-      print('Warning: this does not look like a regular search maze')
-
-    # For display purposes
-    self._visited, self._visitedlist, self._expanded = {}, [], 0
-
+    
   def getStartState(self):
     return self.startState
 
   def isGoalState(self, state):
-     isGoal = state == self.goal
-
-     # For display purposes only
-     if isGoal:
-       self._visitedlist.append(state)
-       import __main__
-       if '_display' in dir(__main__):
-         if 'drawExpandedCells' in dir(__main__._display): #@UndefinedVariable
-           __main__._display.drawExpandedCells(self._visitedlist) #@UndefinedVariable
-
-     return isGoal
+     return state == self.goal
 
   def getSuccessors(self, state):
     """
@@ -106,6 +76,25 @@ class CatsSearchProblem(search.SearchProblem):
       if self.walls[x][y]: return 999999
       cost += self.costFn((x,y))
     return cost
+
+class CatAgent(Agent):
+  def __init__( self, index ,fn='aStarSearch', prob = CatsSearchProblem, heuristic='manhattanHeuristic' ):
+    self.index = index
+    heur = getattr(search, heuristic)
+    func = getattr(search, fn)
+    self.searchFunction = lambda x: func(x, heuristic=heur)
+    self.searchType = prob
+
+  def getAction( self, state ):
+    chased = self.index % (state.getNumAgents() - 1) + 1
+    chasing = self.index - 1
+    if chasing == 0 : chasing =  state.getNumAgents() - 1
+    
+    if manhattanDistance(state.getGhost(chasing), state.getGhost(self.index)) < MIN_DIST
+        return max(dist, action for dist in state.getLegalActions(self.index))
+    problem = self.searchType(state, state.getGhostPosition(chased),
+         state.getGhostPosition(self.index))
+    return self.searchFunction(problem)[0]
 
 class GhostAgent( Agent ):
   def __init__( self, index ):
