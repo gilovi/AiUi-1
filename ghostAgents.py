@@ -14,7 +14,6 @@ from util import manhattanDistance
 import util
 import search
 
-MIN_DIST = 8
 
 class CatsSearchProblem(search.SearchProblem):
 
@@ -48,6 +47,7 @@ class CatsSearchProblem(search.SearchProblem):
      required to get there, and 'stepCost' is the incremental
      cost of expanding to that successor
     """
+    chasing = self.index - 1
 
     successors = []
     for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
@@ -78,6 +78,8 @@ class CatsSearchProblem(search.SearchProblem):
     return cost
 
 class CatAgent(Agent):
+  MIN_DIST = 8
+
   def __init__( self, index ,fn='aStarSearch', prob = CatsSearchProblem, heuristic='manhattanHeuristic' ):
     self.index = index
     heur = getattr(search, heuristic)
@@ -90,8 +92,8 @@ class CatAgent(Agent):
     chasing = self.index - 1
     if chasing == 0 : chasing =  state.getNumAgents() - 1
     
-    if manhattanDistance(state.getGhost(chasing), state.getGhost(self.index)) < MIN_DIST
-        return max(dist, action for dist in state.getLegalActions(self.index))
+    #if manhattanDistance(state.getGhost(chasing), state.getGhost(self.index)) < MIN_DIST
+    #   return max(dist, action for dist in state.getLegalActions(self.index))
     problem = self.searchType(state, state.getGhostPosition(chased),
          state.getGhostPosition(self.index))
     return self.searchFunction(problem)[0]
