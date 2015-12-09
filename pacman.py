@@ -246,7 +246,7 @@ class GameState:
 ############################################################################
 
 SCARED_TIME = 40    # Moves ghosts are scared
-COLLISION_TOLERANCE = 0.7 # How close ghosts must be to Pacman to kill
+COLLISION_TOLERANCE = 0.8 # How close ghosts must be to Pacman to kill
 TIME_PENALTY = 1 # Number of points lost each round
 
 class ClassicGameRules:
@@ -311,7 +311,7 @@ class PacmanRules:
   These functions govern how pacman interacts with his environment under
   the classic game rules.
   """
-  PACMAN_SPEED=1
+  PACMAN_SPEED = 1
 
   def getLegalActions( state ):
     """
@@ -372,7 +372,7 @@ class GhostRules:
   """
   These functions dictate how ghosts interact with their environment.
   """
-  GHOST_SPEED=1.0
+  GHOST_SPEED = 0.8
   def getLegalActions( state, ghostIndex ):
     """
     Ghosts cannot stop, and cannot turn around unless they
@@ -392,11 +392,12 @@ class GhostRules:
 
     legal = GhostRules.getLegalActions( state, ghostIndex )
     if action not in legal:
-      raise Exception("Illegal ghost action " + str(action))
+      pass
+      #print ('raise Exception("Illegal ghost action " + str(action) + "  ghostIndex=" + str(ghostIndex))')
 
     ghostState = state.data.agentStates[ghostIndex]
     speed = GhostRules.GHOST_SPEED
-    #if ghostState.scaredTimer > 0: speed /= 2.0 #ovi
+    #speed *= 0.9 #ovi
     vector = Actions.directionToVector( action, speed )
     ghostState.configuration = ghostState.configuration.generateSuccessor( vector )
   applyAction = staticmethod( applyAction )
@@ -409,6 +410,24 @@ class GhostRules:
   decrementTimer = staticmethod( decrementTimer )
 
   def checkDeath( state, agentIndex):
+    toJump = [False] * 5
+    otherAgentIndex = state.getPacmanPosition()
+    for index1 in range( 1, len( state.data.agentStates ) ):
+      for index2 in range(1, len( state.data.agentStates ) ):
+        if index1 == index2: continue
+        ghost1State = state.data.agentStates[index1]
+        ghost2State = state.data.agentStates[index2]
+        ghost1Position = ghost1State.configuration.getPosition()
+        ghost2Position = ghost2State.configuration.getPosition()
+        if util.euclideanDistance(ghost1Position,ghost2Position) < 1:
+          toJump[index1 - 1] = True
+          toJump[index2 - 1] = True
+                  #@@#@@
+    for index in range(1, len(toJump) + 1):
+      if toJump[index - 1]:
+        ghostState = state.data.agentStates[index]
+        GhostRules.placeGhost(state, ghostState)
+
     pacmanPosition = state.getPacmanPosition()
     if agentIndex == 0: # Pacman just moved; Anyone can kill him
       for index in range( 1, len( state.data.agentStates ) ):
@@ -420,7 +439,9 @@ class GhostRules:
       ghostState = state.data.agentStates[agentIndex]
       ghostPosition = ghostState.configuration.getPosition()
       if GhostRules.canKill( pacmanPosition, ghostPosition ):
-        GhostRules.collide( state, ghostState, agentIndex )
+        GhostRules.collide(state, ghostState, agentIndex )
+
+
   checkDeath = staticmethod( checkDeath )
 
   def collide( state, ghostState, agentIndex):
@@ -435,12 +456,12 @@ class GhostRules:
       if not state.data._win:
         #state.data.scoreChange -= 500
         #state.data._lose = True
-        ghostState.scaredTimer = 10000 #@@@
+        ghostState.scaredTimer = 100#@@@
         ghostState.isScared = True
   collide = staticmethod( collide )
 
   def canKill( pacmanPosition, ghostPosition ):
-    return manhattanDistance( ghostPosition, pacmanPosition ) <= COLLISION_TOLERANCE
+    return util.euclideanDistance( ghostPosition, pacmanPosition ) <= COLLISION_TOLERANCE
   canKill = staticmethod( canKill )
 
   def placeGhost(state, ghostState):

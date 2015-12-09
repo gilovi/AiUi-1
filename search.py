@@ -62,10 +62,10 @@ class Node():
     """
     a node in a graph
     """
-    def __init__(self, position, move = [], price = 0, father = None):
+    def __init__(self, position, moves = [], price = 0, father = None):
 
         self.position = position
-        self.move = move
+        self.moves = moves
         self.price = price
         self.father = father
 
@@ -79,7 +79,7 @@ def search (problem , data_struct ):
   while not data_struct.isEmpty():
       curr_node = data_struct.pop()
       if problem.isGoalState(curr_node.position):
-        return curr_node.move
+        return curr_node.moves
         #found_goal = curr_node
       successors = problem.getSuccessors(curr_node.position)
       shuffle(successors)
@@ -88,9 +88,9 @@ def search (problem , data_struct ):
         if state in nodes:
             if nodes[state].price > price + curr_node.price:
                 n = nodes[state]
-                n.move, n.price, n.father = curr_node.move + [move], curr_node.price + price, curr_node
+                n.moves, n.price, n.father = curr_node.moves + [move], curr_node.price + price, curr_node
         else:
-          new_node = Node(state, curr_node.move + [move], curr_node.price + price, curr_node)
+          new_node = Node(state, curr_node.moves + [move], curr_node.price + price, curr_node)
           data_struct.push(new_node)
           nodes[state] = new_node
   return None

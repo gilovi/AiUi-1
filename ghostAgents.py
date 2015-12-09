@@ -30,12 +30,12 @@ class CatsSearchProblem(search.SearchProblem):
     self.goal = goal
     self.costFn = costFn
     self.noGo = noGo
-    
+
   def getStartState(self):
     return self.startState
 
   def isGoalState(self, state):
-     return state == self.goal
+     return util.euclideanDistance(state, self.goal ) < 1
 
   def getSuccessors(self, state):
     """
@@ -48,12 +48,12 @@ class CatsSearchProblem(search.SearchProblem):
      required to get there, and 'stepCost' is the incremental
      cost of expanding to that successor
     """
-    
+
 
     successors = []
     for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
       x,y = state
-      if state == self.noGo : continue
+      if state == self.noGo or (self.noGo is not None and state in self.noGo): continue
       dx, dy = Actions.directionToVector(action)
       nextx, nexty = int(x + dx), int(y + dy)
       if not self.walls[nextx][nexty]:
@@ -81,7 +81,7 @@ class CatsSearchProblem(search.SearchProblem):
 
 class CatAgent(Agent):
 
-  DIST_FROM_PAC = 3
+  DIST_FROM_PAC = 5
 
   origStart = None
   def __init__( self, index ,fn='aStarSearch', prob = CatsSearchProblem, heuristic='manhattanHeuristic' ):
@@ -99,38 +99,32 @@ class CatAgent(Agent):
     chasing = self.index - 1
     if chasing == 0 : chasing =  state.getNumAgents() - 1
 
-    noProblem = self.searchType(state, state.getGhostPosition(chasing), pos)
+    chaserProblem = self.searchType(state, state.getGhostPosition(chasing), pos)
     pacProblem = self.searchType(state, state.getPacmanPosition(), pos)
 
     pacDir = self.searchFunction(pacProblem)
-    if  len(pacDir) < CatAgent.DIST_FROM_PAC :
-      succ = pacProblem.getSuccessors(pos)
-      # a move that makes the shortest path to pacman smaller than it is now, is illegal.
-      noGo = [direction[0] for direction in succ if len(self.searchFunction(self.searchType(state, state.getPacmanPosition(), succ[0]))) < len(pacDir)]
-
+    successors = pacProblem.getSuccessors(pos)
+    if  len(pacDir) <= CatAgent.DIST_FROM_PAC:
+        noGo = [suc[0] for suc in successors if len(self.searchFunction(self.searchType(state, state.getPacmanPosition(), suc[0]))) <  len(pacDir) ]
     else:
-      noGoDir = self.searchFunction(noProblem)
+      noGoDir = self.searchFunction(chaserProblem)
       try:
-        noGoDir =  noGoDir[0]
-        noGo = Actions.directionToIndex(pos, noGoDir)
-      except IndexError:
+        noGoDir = noGoDir[0]
+        noGo = Actions.directionToIndex(pos , noGoDir)
+      except (TypeError, IndexError):
         noGo = None
     #if manhattanDistance(state.getGhost(chasing), state.getGhost(self.index)) < MIN_DIST
     #   return max(dist, action for dist in state.getLegalActions(self.index))
     problem = self.searchType(state, state.getGhostPosition(chased),
-         state.getGhostPosition(self.index), noGo)
+         pos, noGo)
     try:
       return self.searchFunction(problem)[0]
-    except (TypeError):
-      return noGoDir
-    except IndexError:
-      if type(noGo) is list: # its a pacman run
-        return max([(util.manhattanDistance(dir[0], state.getPacmanPosition()) , dir[1]) for dir in succ ])[1] #can change to astar distance...
+    except (TypeError, IndexError):
+      if type(noGo) is list:
         return Directions.STOP
 
       # deColideProblem = self.searchType(state, self.origStart)
-      return  Directions.STOP #deColideProblem
-    return self.searchFunction(problem)[0]
+      return noGoDir #deColideProblem
 
 class GhostAgent( Agent ):
   def __init__( self, index ):
