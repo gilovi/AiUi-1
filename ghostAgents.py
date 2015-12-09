@@ -35,7 +35,7 @@ class CatsSearchProblem(search.SearchProblem):
     return self.startState
 
   def isGoalState(self, state):
-     return util.euclideanDistance(state, self.goal ) < 1
+     return util.euclideanDistance(state, self.goal ) < 0.9
 
   def getSuccessors(self, state):
     """

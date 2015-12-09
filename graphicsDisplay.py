@@ -30,9 +30,12 @@ GHOST_COLORS = []
 GHOST_COLORS.append(formatColor(.9,0,0)) # Red
 GHOST_COLORS.append(formatColor(1.0,0.6,0.0)) # Yellow
 GHOST_COLORS.append(formatColor(.1,.75,.7)) # Green
-GHOST_COLORS.append(formatColor(0,.3,.9)) # Blue
-GHOST_COLORS.append(formatColor(.4,0.13,0.91)) # Purple
-GHOST_COLORS.append(formatColor(.98,.41,.07)) # Orange
+GHOST_COLORS.append(formatColor(.9,0,0)) # Red
+GHOST_COLORS.append(formatColor(1.0,0.6,0.0)) # Yellow
+GHOST_COLORS.append(formatColor(.1,.75,.7)) # Green
+#GHOST_COLORS.append(formatColor(0,.3,.9)) # Blue
+#GHOST_COLORS.append(formatColor(.4,0.13,0.91)) # Purple
+#GHOST_COLORS.append(formatColor(.98,.41,.07)) # Orange
 
 TEAM_COLORS = GHOST_COLORS[:2]
 
@@ -391,7 +394,7 @@ class PacmanGraphics:
       color = SCARED_COLOR
     else:
       color = GHOST_COLORS[ghostIndex]
-    outlineColor = GHOST_COLORS[(ghostIndex + 1) % self.how_many_ghosts] #@@@@
+    outlineColor = GHOST_COLORS[(ghostIndex + 1) ]#%(self.how_many_ghosts )] #@@@@
     edit(ghostImageParts[0], ('fill', color), ('outline', outlineColor)) #@@@@
     #edit(ghostImageParts[0], ('fill', color), ('outline', color))
     self.moveEyes(self.getPosition(ghost), self.getDirection(ghost), ghostImageParts[-4:])

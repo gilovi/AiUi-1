@@ -312,7 +312,7 @@ class PacmanRules:
   the classic game rules.
   """
   PACMAN_SPEED = 1
-
+  TOLERANCE = 0.7
   def getLegalActions( state ):
     """
     Returns a list of possible actions.
@@ -419,7 +419,7 @@ class GhostRules:
         ghost2State = state.data.agentStates[index2]
         ghost1Position = ghost1State.configuration.getPosition()
         ghost2Position = ghost2State.configuration.getPosition()
-        if util.euclideanDistance(ghost1Position,ghost2Position) < 1:
+        if util.euclideanDistance(ghost1Position,ghost2Position) < COLLISION_TOLERANCE:
           toJump[index1 - 1] = True
           toJump[index2 - 1] = True
                   #@@#@@
